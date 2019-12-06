@@ -641,7 +641,6 @@ class Package {
 		import dub.version_ : dubVersion;
 		import std.exception : enforce;
 
-		const dep = m_info.toolchainRequirements.dub;
 
 		static assert(dubVersion.length);
 		static if (dubVersion[0] == 'v') {
@@ -652,10 +651,21 @@ class Package {
 		}
 		static assert(isValidVersion(dv));
 
-		enforce(dep.matches(dv),
+		const dubDep = m_info.toolchainRequirements.dub;
+		const dubFwDep = m_info.toolchainRequirements.dubFunkwerk;
+
+		// 'dub: "no"' is allowed, but forces a dub-funkwerk check
+		enforce(!dubDep.valid || dubDep.matches(dv),
 			"dub-" ~ dv ~ " does not comply with toolchainRequirements.dub "
-			~ "specification: " ~ m_info.toolchainRequirements.dub.toString()
-			~ "\nPlease consider upgrading your DUB installation");
+			~ "specification: " ~ dubDep.toString
+			~ "\nPlease upgrade your dub installation");
+		if (dubFwDep.valid || !dubDep.valid)
+		{
+			enforce(dubFwDep.matches(dv),
+				"dub-funkwerk-" ~ dv ~ " does not comply with toolchainRequirements.dubFunkwerk "
+				~ "specification: " ~ dubFwDep.toString()
+				~ "\nPlease upgrade your dub-funkwerk installation");
+		}
 	}
 
 	private void fillWithDefaults()
