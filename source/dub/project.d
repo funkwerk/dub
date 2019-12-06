@@ -283,12 +283,12 @@ class Project {
 			if (p !in globalbs.dependencies) warnSubConfig(p, c);
 			else checkSubConfig(p, c);
 		}
-		foreach (c; m_rootPackage.configurations) {
-			auto bs = m_rootPackage.getBuildSettings(c);
-			foreach (p, c; bs.subConfigurations) {
+		foreach (configuration; m_rootPackage.configurations) {
+			auto bs = m_rootPackage.getBuildSettings(configuration);
+			foreach (p, subconfig; bs.subConfigurations) {
 				if (p !in bs.dependencies && p !in globalbs.dependencies)
-					warnSubConfig(p, c);
-				else checkSubConfig(p, c);
+					warnSubConfig(p, subconfig);
+				else checkSubConfig(p, subconfig);
 			}
 		}
 
