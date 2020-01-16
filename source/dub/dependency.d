@@ -93,6 +93,17 @@ struct Dependency {
 		m_path = path;
 	}
 
+	/** Constructs a new dependency specification that matches a specific
+		version *and* path.
+	*/
+	this(const Version ver, NativePath path)
+	{
+		m_inclusiveA = m_inclusiveB = true;
+		m_versA = ver;
+		m_versB = ver;
+		m_path = path;
+	}
+
 	/// If set, overrides any version based dependency selection.
 	@property void path(NativePath value) { m_path = value; }
 	/// ditto
@@ -470,7 +481,7 @@ struct Dependency {
 		if (m_versB.isBranch != o.m_versB.isBranch) return invalid;
 		if (m_versA.isBranch) return m_versA == o.m_versA ? this : invalid;
 		// NOTE Path is @system in vibe.d 0.7.x and in the compatibility layer
-		if (() @trusted { return this.path != o.path; } ()) return invalid;
+		if (() @trusted { return !m_path.empty && !o.m_path.empty && m_path != o.m_path; } ()) return invalid;
 
 		int acmp = m_versA.opCmp(o.m_versA);
 		int bcmp = m_versB.opCmp(o.m_versB);
@@ -479,8 +490,10 @@ struct Dependency {
 		d.m_inclusiveA = !m_inclusiveA && acmp >= 0 ? false : o.m_inclusiveA;
 		d.m_versA = acmp > 0 ? m_versA : o.m_versA;
 		d.m_inclusiveB = !m_inclusiveB && bcmp <= 0 ? false : o.m_inclusiveB;
+		if (bcmp < 0) d.m_inclusiveB = m_inclusiveB;
 		d.m_versB = bcmp < 0 ? m_versB : o.m_versB;
 		d.m_optional = m_optional && o.m_optional;
+		d.m_path = () @trusted { return !m_path.empty ? m_path : o.m_path; }();
 		if (!d.valid) return invalid;
 
 		return d;
@@ -541,6 +554,9 @@ unittest {
 	assert (!m.matches(Version("1.1.0")));
 	assert (!m.matches(Version("0.0.1")));
 
+	a = Dependency("0.4.0"); b = Dependency("^0.4.0");
+	m = a.merge(b);
+	assert (m.valid(), m.toString());
 
 	// branches / head revisions
 	a = Dependency(Version.masterBranch);

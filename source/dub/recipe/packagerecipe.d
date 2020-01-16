@@ -116,6 +116,8 @@ struct ToolchainRequirements
 
 	/// DUB version requirement
 	Dependency dub = Dependency.any;
+	/// Funkwerk dub fork, version requirement
+	Dependency dubFunkwerk = Dependency.any;
 	/// D front-end version requirement
 	Dependency frontend = Dependency.any;
 	/// DMD version requirement
@@ -402,6 +404,7 @@ package bool addRequirement(ref ToolchainRequirements req, string name, string v
 	switch (name) {
 		default: return false;
 		case "dub": req.dub = parseDependency(value); break;
+		case "dub-funkwerk": req.dubFunkwerk = parseDependency(value); break;
 		case "frontend": req.frontend = parseDMDDependency(value); break;
 		case "ldc": req.ldc = parseDependency(value); break;
 		case "gdc": req.gdc = parseDependency(value); break;
